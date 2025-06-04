@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../services/auth_service.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -16,10 +17,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final AuthService _authService = AuthService(); // Add this
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
+  String? _selectedRole; // Add role selection state
+
+  // Define available roles
+  final List<String> _roles = ['user', 'admin']; // Change to lowercase
 
   @override
   void dispose() {
@@ -37,12 +43,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (value == null || value.isEmpty) {
       return 'CNIC is required';
     }
-    
+
     final cnicRegex = RegExp(r'^\d{5}-\d{7}-\d{1}$');
     if (!cnicRegex.hasMatch(value)) {
       return 'Enter valid CNIC format (XXXXX-XXXXXXX-X)';
     }
-    
+
     return null;
   }
 
@@ -51,12 +57,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (value == null || value.isEmpty) {
       return 'Phone number is required';
     }
-    
+
     final phoneRegex = RegExp(r'^03\d{9}$');
     if (!phoneRegex.hasMatch(value)) {
       return 'Enter valid Pakistani phone number (03XXXXXXXXX)';
     }
-    
+
     return null;
   }
 
@@ -65,12 +71,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (value == null || value.isEmpty) {
       return 'Email is required';
     }
-    
+
     final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
     if (!emailRegex.hasMatch(value)) {
       return 'Enter a valid email address';
     }
-    
+
     return null;
   }
 
@@ -79,16 +85,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (value == null || value.isEmpty) {
       return 'Full name is required';
     }
-    
+
     if (value.trim().length < 2) {
       return 'Full name must be at least 2 characters';
     }
-    
+
     final nameRegex = RegExp(r'^[a-zA-Z\s]+$');
     if (!nameRegex.hasMatch(value)) {
       return 'Full name can only contain letters and spaces';
     }
-    
+
     return null;
   }
 
@@ -97,23 +103,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (value == null || value.isEmpty) {
       return 'Password is required';
     }
-    
+
     if (value.length < 8) {
       return 'Password must be at least 8 characters';
     }
-    
+
     if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
       return 'Password must contain at least one lowercase letter';
     }
-    
+
     if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
       return 'Password must contain at least one uppercase letter';
     }
-    
+
     if (!RegExp(r'(?=.*\d)').hasMatch(value)) {
       return 'Password must contain at least one number';
     }
-    
+
     return null;
   }
 
@@ -122,44 +128,75 @@ class _SignUpScreenState extends State<SignUpScreen> {
     if (value == null || value.isEmpty) {
       return 'Please confirm your password';
     }
-    
+
     if (value != _passwordController.text) {
       return 'Passwords do not match';
     }
-    
+
     return null;
-  }  // Handle form submission
+  } // Role validation
+
+  String? _validateRole(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please select a role';
+    }
+    return null;
+  }
+
+  // Handle form submission
   void _handleSignUp() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created successfully!'),
-            backgroundColor: Colors.green,
-          ),
+      try {
+        final response = await _authService.signUp(
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+          fullName: _fullNameController.text.trim(),
+          cnic: _cnicController.text,
+          phone: _phoneController.text,
+          role: _selectedRole!.toLowerCase(),
         );
+
+        if (response.user != null) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Account created successfully! Please check your email to verify.',
+                ),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pushReplacementNamed(context, '/signin');
+          }
+        }
+      } catch (error) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error: ${error.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Create Account'),
-      ),
+      appBar: AppBar(title: const Text('Create Account')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -174,10 +211,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   style: Theme.of(context).textTheme.headlineLarge,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),                Text(
+                const SizedBox(height: 8),
+                Text(
                   'Create your account to register IMEI',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -256,7 +296,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -280,11 +322,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isConfirmPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
-                          _isConfirmPasswordVisible = !_isConfirmPasswordVisible;
+                          _isConfirmPasswordVisible =
+                              !_isConfirmPasswordVisible;
                         });
                       },
                     ),
@@ -293,21 +338,45 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   textInputAction: TextInputAction.done,
                   validator: _validateConfirmPassword,
                 ),
+                const SizedBox(height: 16), // Role Selection Field
+                DropdownButtonFormField<String>(
+                  value: _selectedRole,
+                  decoration: const InputDecoration(
+                    labelText: 'Select Role',
+                    prefixIcon: Icon(Icons.admin_panel_settings_outlined),
+                  ),
+                  items:
+                      _roles.map((role) {
+                        return DropdownMenuItem<String>(
+                          value: role,
+                          child: Text(role),
+                        );
+                      }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedRole = value;
+                    });
+                  },
+                  validator: _validateRole,
+                ),
                 const SizedBox(height: 32),
 
                 // Sign Up Button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleSignUp,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text('Create Account'),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                          : const Text('Create Account'),
                 ),
                 const SizedBox(height: 16),
 
@@ -318,7 +387,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     Text(
                       'Already have an account? ',
                       style: Theme.of(context).textTheme.bodyMedium,
-                    ),                    TextButton(
+                    ),
+                    TextButton(
                       onPressed: () {
                         Navigator.pushReplacementNamed(context, '/signin');
                       },
@@ -343,11 +413,11 @@ class _CNICFormatter extends TextInputFormatter {
     TextEditingValue newValue,
   ) {
     final text = newValue.text;
-    
+
     if (text.length <= 5) {
       return newValue;
     }
-    
+
     if (text.length <= 12) {
       final formatted = '${text.substring(0, 5)}-${text.substring(5)}';
       return TextEditingValue(
@@ -355,8 +425,9 @@ class _CNICFormatter extends TextInputFormatter {
         selection: TextSelection.collapsed(offset: formatted.length),
       );
     }
-    
-    final formatted = '${text.substring(0, 5)}-${text.substring(5, 12)}-${text.substring(12)}';
+
+    final formatted =
+        '${text.substring(0, 5)}-${text.substring(5, 12)}-${text.substring(12)}';
     return TextEditingValue(
       text: formatted,
       selection: TextSelection.collapsed(offset: formatted.length),
