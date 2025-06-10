@@ -194,4 +194,47 @@ class AuthService {
       return false;
     }
   }
+
+  // Get all users (for admin)
+  Future<List<AppUser>> getAllUsers() async {
+    try {
+      final QuerySnapshot result =
+          await _firestore
+              .collection('users')
+              .orderBy('createdAt', descending: true)
+              .get();
+
+      return result.docs.map((doc) => AppUser.fromFirestore(doc)).toList();
+    } catch (e) {
+      throw Exception('Failed to get all users: ${e.toString()}');
+    }
+  }
+
+  // Get user statistics (for admin)
+  Future<Map<String, int>> getUserStats() async {
+    try {
+      final QuerySnapshot allUsersResult =
+          await _firestore.collection('users').get();
+
+      final QuerySnapshot adminUsersResult =
+          await _firestore
+              .collection('users')
+              .where('role', isEqualTo: 'admin')
+              .get();
+
+      final QuerySnapshot regularUsersResult =
+          await _firestore
+              .collection('users')
+              .where('role', isEqualTo: 'user')
+              .get();
+
+      return {
+        'total': allUsersResult.docs.length,
+        'admin': adminUsersResult.docs.length,
+        'user': regularUsersResult.docs.length,
+      };
+    } catch (e) {
+      throw Exception('Failed to get user stats: ${e.toString()}');
+    }
+  }
 }

@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../../data/services/auth_service.dart';
+import '../../../data/services/imei_service.dart';
 import '../../../data/models/user_model.dart';
+import '../admin/admin_imei_management_screen.dart';
+import '../admin/admin_user_management_screen.dart';
+import '../admin/admin_reports_screen.dart';
+import '../imei/imei_status_check_screen.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -11,8 +16,10 @@ class AdminDashboardScreen extends StatefulWidget {
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   final AuthService _authService = AuthService();
+  final ImeiService _imeiService = ImeiService();
   AppUser? _currentUser;
   bool _isLoading = true;
+  Map<String, int> _stats = {};
 
   @override
   void initState() {
@@ -25,9 +32,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       final user = _authService.currentUser;
       if (user != null) {
         final userData = await _authService.getUserData(user.uid);
+        final stats = await _imeiService.getRegistrationStats();
+
         if (mounted) {
           setState(() {
             _currentUser = userData;
+            _stats = stats;
             _isLoading = false;
           });
         }
@@ -267,7 +277,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            '0', // This would be fetched from database
+                            '${_stats['total'] ?? 0}', // Real data from database
                             style: Theme.of(
                               context,
                             ).textTheme.headlineMedium?.copyWith(
@@ -336,9 +346,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   subtitle: 'View and manage user accounts',
                   color: Colors.blue,
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('User Management feature coming soon!'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AdminUserManagementScreen(),
                       ),
                     );
                   },
@@ -349,9 +360,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   subtitle: 'Manage IMEI registrations',
                   color: Colors.green,
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('IMEI Management feature coming soon!'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                AdminImeiManagementScreen(admin: _currentUser!),
                       ),
                     );
                   },
@@ -362,9 +376,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   subtitle: 'View system reports',
                   color: Colors.purple,
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Reports feature coming soon!'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AdminReportsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildAdminFeatureCard(
+                  icon: Icons.search,
+                  title: 'IMEI Status Check',
+                  subtitle: 'Check any IMEI status',
+                  color: Colors.teal,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ImeiStatusCheckScreen(),
                       ),
                     );
                   },
@@ -391,19 +420,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Security feature coming soon!'),
-                      ),
-                    );
-                  },
-                ),
-                _buildAdminFeatureCard(
-                  icon: Icons.support_agent_outlined,
-                  title: 'Support Tickets',
-                  subtitle: 'Manage user support',
-                  color: Colors.teal,
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Support Tickets feature coming soon!'),
                       ),
                     );
                   },
