@@ -229,6 +229,15 @@ class ImeiService {
     ];
   }
 
+  // Delete device completely from the system
+  Future<void> deleteDevice(String deviceId) async {
+    try {
+      await _firestore.collection('imei_registrations').doc(deviceId).delete();
+    } catch (e) {
+      throw Exception('Failed to delete device: ${e.toString()}');
+    }
+  }
+
   // Get device types for dropdown
   static List<String> getDeviceTypes() {
     return ['Smartphone', 'Tablet', 'Feature Phone', 'Smartwatch', 'Other'];

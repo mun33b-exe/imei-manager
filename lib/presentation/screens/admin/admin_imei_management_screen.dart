@@ -81,6 +81,178 @@ class _AdminImeiManagementScreenState extends State<AdminImeiManagementScreen>
     }
   }
 
+  Future<void> _showExportDialog() async {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Export Data'),
+            content: const Text(
+              'Export functionality will be implemented in a future update.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Future<void> _showBulkDeleteDialog() async {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.red),
+                const SizedBox(width: 8),
+                const Text('Bulk Operations'),
+              ],
+            ),
+            content: const Text(
+              'Bulk delete operations will be implemented in a future update. '
+              'For now, you can delete devices individually using the delete button on each device card.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Future<void> _deleteDevice(ImeiDevice device) async {
+    try {
+      await _imeiService.deleteDevice(device.id);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Device deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadData(); // Refresh data
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting device: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _showDeleteConfirmationDialog(ImeiDevice device) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.red, size: 28),
+              const SizedBox(width: 8),
+              const Text('Confirm Deletion'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to permanently delete this device registration?',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${device.deviceBrand} ${device.deviceModel}',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text('IMEI: ${device.imeiNumber}'),
+                    Text('Owner: ${device.userFullName}'),
+                    Text('Status: ${device.status.displayName}'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: Colors.orange.shade700,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'This action cannot be undone. All data related to this device will be permanently removed.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.orange.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.delete_forever, size: 18),
+                  const SizedBox(width: 4),
+                  const Text('Delete Permanently'),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await _deleteDevice(device);
+    }
+  }
+
   Future<void> _updateDeviceStatus(
     ImeiDevice device,
     DeviceStatus newStatus, {
@@ -139,17 +311,41 @@ class _AdminImeiManagementScreenState extends State<AdminImeiManagementScreen>
                   DropdownButtonFormField<DeviceStatus>(
                     value: selectedStatus,
                     decoration: const InputDecoration(labelText: 'Status'),
-                    items:
-                        DeviceStatus.values.map((status) {
-                          return DropdownMenuItem(
-                            value: status,
-                            child: Text(status.displayName),
-                          );
-                        }).toList(),
+                    items: [
+                      ...DeviceStatus.values.map((status) {
+                        return DropdownMenuItem(
+                          value: status,
+                          child: Text(status.displayName),
+                        );
+                      }),
+                      const DropdownMenuItem(
+                        value: null,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_forever,
+                              color: Colors.red,
+                              size: 18,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Delete Device',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     onChanged: (value) {
-                      setDialogState(() {
-                        selectedStatus = value;
-                      });
+                      if (value == null) {
+                        // Handle delete option
+                        Navigator.pop(context);
+                        _showDeleteConfirmationDialog(device);
+                      } else {
+                        setDialogState(() {
+                          selectedStatus = value;
+                        });
+                      }
                     },
                   ),
                   if (selectedStatus == DeviceStatus.rejected) ...[
@@ -241,6 +437,45 @@ class _AdminImeiManagementScreenState extends State<AdminImeiManagementScreen>
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              switch (value) {
+                case 'export':
+                  _showExportDialog();
+                  break;
+                case 'bulk_delete':
+                  _showBulkDeleteDialog();
+                  break;
+              }
+            },
+            itemBuilder:
+                (context) => [
+                  const PopupMenuItem(
+                    value: 'export',
+                    child: Row(
+                      children: [
+                        Icon(Icons.file_download, size: 18),
+                        SizedBox(width: 8),
+                        Text('Export Data'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'bulk_delete',
+                    child: Row(
+                      children: [
+                        Icon(Icons.delete_sweep, color: Colors.red, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'Bulk Operations',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+          ),
           IconButton(icon: const Icon(Icons.refresh), onPressed: _loadData),
         ],
         bottom: TabBar(
@@ -598,30 +833,62 @@ class _AdminImeiManagementScreenState extends State<AdminImeiManagementScreen>
                 ],
               ),
               const SizedBox(height: 8),
-              // Additional options button
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _showStatusUpdateDialog(device),
-                  icon: const Icon(Icons.more_horiz, size: 18),
-                  label: const Text('More Options'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+              // Additional options row
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showStatusUpdateDialog(device),
+                      icon: const Icon(Icons.more_horiz, size: 18),
+                      label: const Text('More Options'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showDeleteConfirmationDialog(device),
+                      icon: const Icon(Icons.delete_forever, size: 18),
+                      label: const Text('Delete'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: BorderSide(color: Colors.red.shade300),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ] else ...[
-              // General update button for non-pending devices
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _showStatusUpdateDialog(device),
-                  icon: const Icon(Icons.edit, size: 18),
-                  label: const Text('Update Status'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
+              // General options for non-pending devices
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showStatusUpdateDialog(device),
+                      icon: const Icon(Icons.edit, size: 18),
+                      label: const Text('Update Status'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => _showDeleteConfirmationDialog(device),
+                      icon: const Icon(Icons.delete_forever, size: 18),
+                      label: const Text('Delete'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                        side: BorderSide(color: Colors.red.shade300),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ],

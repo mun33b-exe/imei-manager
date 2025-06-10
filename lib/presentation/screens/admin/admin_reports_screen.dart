@@ -136,19 +136,20 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
       builder: (context, constraints) {
         // Determine the number of columns based on screen width
         int crossAxisCount = 2;
-        double childAspectRatio = 2.2;
-        double crossAxisSpacing = 8.0;
-        double mainAxisSpacing = 8.0;
+        double childAspectRatio =
+            1.6; // Increased from 2.2 to make cards taller
+        double crossAxisSpacing = 12.0;
+        double mainAxisSpacing = 12.0;
 
         if (constraints.maxWidth > 600) {
           crossAxisCount = 4;
-          childAspectRatio = 1.5;
-          crossAxisSpacing = 12.0;
-          mainAxisSpacing = 12.0;
+          childAspectRatio = 1.2; // Slightly taller for wider screens
+          crossAxisSpacing = 16.0;
+          mainAxisSpacing = 16.0;
         } else if (constraints.maxWidth > 400) {
-          childAspectRatio = 2.2;
+          childAspectRatio = 1.6; // Better aspect ratio for medium screens
         } else {
-          childAspectRatio = 2.5; // Even wider for very narrow screens
+          childAspectRatio = 1.8; // Adjusted for very narrow screens
         }
 
         return GridView.count(
@@ -196,15 +197,15 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     Color color,
   ) {
     return Card(
-      elevation: 2,
+      elevation: 3, // Increased elevation for better visibility
       color: color.withOpacity(0.1),
       child: Container(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0), // Increased padding
         child: LayoutBuilder(
           builder: (context, constraints) {
             // Calculate sizes based on available space
-            final iconSize = constraints.maxHeight * 0.25;
-            final maxIconSize = 20.0;
+            final iconSize = constraints.maxHeight * 0.2;
+            final maxIconSize = 32.0; // Increased max icon size
             final actualIconSize =
                 iconSize > maxIconSize ? maxIconSize : iconSize;
 
@@ -213,30 +214,34 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(icon, size: actualIconSize, color: color),
-                SizedBox(height: constraints.maxHeight * 0.05),
+                SizedBox(height: constraints.maxHeight * 0.08),
                 Flexible(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
                       value,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineMedium?.copyWith(
+                        // Changed from titleLarge
                         color: color,
                         fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                        fontSize: 24, // Increased font size
                       ),
                     ),
                   ),
                 ),
-                SizedBox(height: constraints.maxHeight * 0.02),
+                SizedBox(height: constraints.maxHeight * 0.04),
                 Flexible(
                   child: FittedBox(
                     fit: BoxFit.scaleDown,
                     child: Text(
                       title,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        // Changed from bodySmall
                         color: color,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13, // Increased font size
                       ),
                       textAlign: TextAlign.center,
                       maxLines: 2,
@@ -256,12 +261,14 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     final total = _stats['total'] ?? 0;
     if (total == 0) {
       return Card(
+        elevation: 2,
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(32.0), // Increased padding
           child: Center(
             child: Text(
               'No data available',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                // Changed from bodyMedium
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
@@ -271,8 +278,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     }
 
     return Card(
+      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0), // Increased padding
         child: Column(
           children: [
             _buildStatusBar(
@@ -281,21 +289,21 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
               total,
               Colors.orange,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12), // Increased spacing
             _buildStatusBar(
               'Approved',
               _stats['approved'] ?? 0,
               total,
               Colors.green,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12), // Increased spacing
             _buildStatusBar(
               'Rejected',
               _stats['rejected'] ?? 0,
               total,
               Colors.red,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12), // Increased spacing
             _buildStatusBar(
               'Suspended',
               _stats['suspended'] ?? 0,
@@ -318,24 +326,30 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
           children: [
             Text(
               label,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                // Changed from bodyMedium
+                fontWeight: FontWeight.w500,
+              ),
             ),
             Text(
               '$count ($percentage%)',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                // Changed from bodyMedium
                 color: color,
                 fontWeight: FontWeight.w600,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
-        LinearProgressIndicator(
-          value: total > 0 ? count / total : 0,
-          backgroundColor: color.withOpacity(0.2),
-          valueColor: AlwaysStoppedAnimation<Color>(color),
+        const SizedBox(height: 8), // Increased spacing
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4), // Rounded progress bar
+          child: LinearProgressIndicator(
+            value: total > 0 ? count / total : 0,
+            backgroundColor: color.withOpacity(0.2),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 8.0, // Increased height for better visibility
+          ),
         ),
       ],
     );
@@ -344,12 +358,14 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   Widget _buildRecentRegistrations() {
     if (_recentRegistrations.isEmpty) {
       return Card(
+        elevation: 2,
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(32.0), // Increased padding
           child: Center(
             child: Text(
               'No recent registrations',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                // Changed from bodyMedium
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
@@ -359,26 +375,60 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     }
 
     return Card(
+      elevation: 2,
       child: ListView.separated(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: _recentRegistrations.length,
-        separatorBuilder: (context, index) => const Divider(),
+        separatorBuilder: (context, index) => const Divider(height: 1),
         itemBuilder: (context, index) {
           final device = _recentRegistrations[index];
           return ListTile(
-            leading: Icon(
-              Icons.phone_android,
-              color: Theme.of(context).primaryColor,
-            ),
-            title: Text('${device.deviceBrand} ${device.deviceModel}'),
-            subtitle: Text('${device.userFullName} • ${device.imeiNumber}'),
-            trailing: Chip(
-              label: Text(
-                device.status.displayName,
-                style: const TextStyle(fontSize: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 8,
+            ), // Increased padding
+            leading: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).primaryColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
               ),
-              backgroundColor: _getStatusColor(device.status).withOpacity(0.1),
+              child: Icon(
+                Icons.phone_android,
+                color: Theme.of(context).primaryColor,
+                size: 24, // Increased icon size
+              ),
+            ),
+            title: Text(
+              '${device.deviceBrand} ${device.deviceModel}',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                // Better typography
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            subtitle: Text(
+              '${device.userFullName} • ${device.imeiNumber}',
+              style:
+                  Theme.of(context).textTheme.bodyMedium, // Better typography
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: _getStatusColor(device.status).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _getStatusColor(device.status).withOpacity(0.3),
+                ),
+              ),
+              child: Text(
+                device.status.displayName,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: _getStatusColor(device.status),
+                ),
+              ),
             ),
           );
         },
@@ -396,12 +446,14 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
 
     if (brandCounts.isEmpty) {
       return Card(
+        elevation: 2,
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(32.0), // Increased padding
           child: Center(
             child: Text(
               'No brand data available',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                // Changed from bodyMedium
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
@@ -417,8 +469,9 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     final topBrands = sortedBrands.take(5).toList();
 
     return Card(
+      elevation: 2,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0), // Increased padding
         child: Column(
           children:
               topBrands.map((entry) {
@@ -426,31 +479,42 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
                 final percentage = (entry.value / total * 100).round();
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12.0,
+                  ), // Increased spacing
                   child: Row(
                     children: [
                       Expanded(
                         flex: 2,
                         child: Text(
                           entry.key,
-                          style: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(fontWeight: FontWeight.w500),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyLarge // Changed from bodyMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                       ),
                       Expanded(
                         flex: 3,
-                        child: LinearProgressIndicator(
-                          value: entry.value / total,
-                          backgroundColor: Colors.grey.withOpacity(0.2),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).primaryColor,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            4,
+                          ), // Rounded progress bar
+                          child: LinearProgressIndicator(
+                            value: entry.value / total,
+                            backgroundColor: Colors.grey.withOpacity(0.2),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).primaryColor,
+                            ),
+                            minHeight: 8.0, // Increased height
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16), // Increased spacing
                       Text(
                         '${entry.value} ($percentage%)',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          // Changed from bodySmall
                           fontWeight: FontWeight.w600,
                         ),
                       ),
