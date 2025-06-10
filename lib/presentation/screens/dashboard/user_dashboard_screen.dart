@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/models/user_model.dart';
+import '../imei/imei_registration_screen.dart';
+import '../imei/my_registrations_screen.dart';
+import '../imei/imei_status_check_screen.dart';
 
 class UserDashboardScreen extends StatefulWidget {
   const UserDashboardScreen({super.key});
@@ -293,12 +296,25 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
                   icon: Icons.add_circle_outline,
                   title: 'Register New IMEI',
                   subtitle: 'Register a new device',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('IMEI Registration feature coming soon!'),
+                  onTap: () async {
+                    final result = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                ImeiRegistrationScreen(user: _currentUser!),
                       ),
                     );
+
+                    if (result == true) {
+                      // Device was successfully registered
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Device registered successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
                   },
                 ),
                 _buildFeatureCard(
@@ -306,9 +322,12 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
                   title: 'My Registrations',
                   subtitle: 'View registered devices',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('My Registrations feature coming soon!'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                MyRegistrationsScreen(user: _currentUser!),
                       ),
                     );
                   },
@@ -318,9 +337,10 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
                   title: 'Check Status',
                   subtitle: 'Check registration status',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Status Check feature coming soon!'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ImeiStatusCheckScreen(),
                       ),
                     );
                   },
