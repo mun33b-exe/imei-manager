@@ -497,7 +497,7 @@ class _AdminImeiManagementScreenState extends State<AdminImeiManagementScreen>
                   child: OutlinedButton.icon(
                     onPressed: () => _showStatusUpdateDialog(device),
                     icon: const Icon(Icons.edit),
-                    label: const Text('Update Status'),
+                    label: const Text('Update Status '),
                   ),
                 ),
                 const SizedBox(width: 12),
