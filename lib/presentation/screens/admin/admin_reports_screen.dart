@@ -132,39 +132,60 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   }
 
   Widget _buildStatsGrid() {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 16,
-      mainAxisSpacing: 16,
-      childAspectRatio: 1.5,
-      children: [
-        _buildStatCard(
-          'Total Registrations',
-          '${_stats['total'] ?? 0}',
-          Icons.phone_android,
-          Colors.blue,
-        ),
-        _buildStatCard(
-          'Pending Review',
-          '${_stats['pending'] ?? 0}',
-          Icons.schedule,
-          Colors.orange,
-        ),
-        _buildStatCard(
-          'Approved',
-          '${_stats['approved'] ?? 0}',
-          Icons.check_circle,
-          Colors.green,
-        ),
-        _buildStatCard(
-          'Rejected',
-          '${_stats['rejected'] ?? 0}',
-          Icons.cancel,
-          Colors.red,
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Determine the number of columns based on screen width
+        int crossAxisCount = 2;
+        double childAspectRatio = 2.2;
+        double crossAxisSpacing = 8.0;
+        double mainAxisSpacing = 8.0;
+
+        if (constraints.maxWidth > 600) {
+          crossAxisCount = 4;
+          childAspectRatio = 1.5;
+          crossAxisSpacing = 12.0;
+          mainAxisSpacing = 12.0;
+        } else if (constraints.maxWidth > 400) {
+          childAspectRatio = 2.2;
+        } else {
+          childAspectRatio = 2.5; // Even wider for very narrow screens
+        }
+
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: crossAxisSpacing,
+          mainAxisSpacing: mainAxisSpacing,
+          childAspectRatio: childAspectRatio,
+          children: [
+            _buildStatCard(
+              'Total',
+              '${_stats['total'] ?? 0}',
+              Icons.phone_android,
+              Colors.blue,
+            ),
+            _buildStatCard(
+              'Pending',
+              '${_stats['pending'] ?? 0}',
+              Icons.schedule,
+              Colors.orange,
+            ),
+            _buildStatCard(
+              'Approved',
+              '${_stats['approved'] ?? 0}',
+              Icons.check_circle,
+              Colors.green,
+            ),
+            _buildStatCard(
+              'Rejected',
+              '${_stats['rejected'] ?? 0}',
+              Icons.cancel,
+              Colors.red,
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -175,31 +196,57 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
     Color color,
   ) {
     return Card(
+      elevation: 2,
       color: color.withOpacity(0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 32, color: color),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+      child: Container(
+        padding: const EdgeInsets.all(8.0),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Calculate sizes based on available space
+            final iconSize = constraints.maxHeight * 0.25;
+            final maxIconSize = 20.0;
+            final actualIconSize =
+                iconSize > maxIconSize ? maxIconSize : iconSize;
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: actualIconSize, color: color),
+                SizedBox(height: constraints.maxHeight * 0.05),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      value,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(height: constraints.maxHeight * 0.02),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      title,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 11,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
