@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../data/services/auth_service.dart';
 import '../../../data/models/user_model.dart';
+import '../imei/imei_registration_screen.dart';
+import '../imei/my_registrations_screen.dart';
+import '../imei/imei_status_check_screen.dart';
 
 class UserDashboardScreen extends StatefulWidget {
   const UserDashboardScreen({super.key});
@@ -48,19 +51,100 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
   }
 
   Future<void> _handleSignOut() async {
-    try {
-      await _authService.signOut();
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/signin');
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error signing out: ${e.toString()}'),
-            backgroundColor: Colors.red,
+    // Show confirmation dialog
+    final bool? shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.logout,
+                color: Theme.of(context).primaryColor,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Confirm Logout',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to sign out of your account?',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              height: 1.5,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withOpacity(0.7),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 20,
+                ),
+              ),
+              child: Text(
+                'Cancel',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 20,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                'Sign Out',
+                style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         );
+      },
+    );
+
+    // Only proceed with sign out if user confirmed
+    if (shouldSignOut == true) {
+      try {
+        await _authService.signOut();
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, '/signin');
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error signing out: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -93,6 +177,7 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('User Dashboard'),
+        automaticallyImplyLeading: false, // Remove back button
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -211,12 +296,25 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
                   icon: Icons.add_circle_outline,
                   title: 'Register New IMEI',
                   subtitle: 'Register a new device',
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('IMEI Registration feature coming soon!'),
+                  onTap: () async {
+                    final result = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                ImeiRegistrationScreen(user: _currentUser!),
                       ),
                     );
+
+                    if (result == true) {
+                      // Device was successfully registered
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Device registered successfully!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
                   },
                 ),
                 _buildFeatureCard(
@@ -224,9 +322,12 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
                   title: 'My Registrations',
                   subtitle: 'View registered devices',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('My Registrations feature coming soon!'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                MyRegistrationsScreen(user: _currentUser!),
                       ),
                     );
                   },
@@ -236,9 +337,10 @@ class _UserDashboardScreenState extends State<UserDashboardScreen> {
                   title: 'Check Status',
                   subtitle: 'Check registration status',
                   onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Status Check feature coming soon!'),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ImeiStatusCheckScreen(),
                       ),
                     );
                   },
