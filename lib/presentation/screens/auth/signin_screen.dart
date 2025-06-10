@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../../data/services/auth_service.dart';
+import '../../../data/models/user_role.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -56,28 +58,65 @@ class _SignInScreenState extends State<SignInScreen> {
     }
 
     return null;
-  }  // Handle form submission
+  } // Handle form submission
+
   void _handleSignIn() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
 
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      try {
+        final authService = AuthService();
+        final loginValue = _loginController.text.trim();
+        final password = _passwordController.text;
 
-      setState(() {
-        _isLoading = false;
-      });
+        // Check if login value is email or phone number
+        final phoneRegex = RegExp(r'^03\d{9}$');
+        final isPhoneNumber = phoneRegex.hasMatch(loginValue);
 
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Signed in successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        final user =
+            isPhoneNumber
+                ? await authService.signInWithPhoneNumber(
+                  phoneNumber: loginValue,
+                  password: password,
+                )
+                : await authService.signInWithEmailAndPassword(
+                  email: loginValue,
+                  password: password,
+                );
+
+        if (user != null && mounted) {
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Signed in successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Navigate to appropriate dashboard based on role
+          if (user.role == UserRole.admin) {
+            Navigator.pushReplacementNamed(context, '/admin-dashboard');
+          } else {
+            Navigator.pushReplacementNamed(context, '/user-dashboard');
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceFirst('Exception: ', '')),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
@@ -86,9 +125,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Sign In'),
-      ),
+      appBar: AppBar(title: const Text('Sign In')),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -109,7 +146,9 @@ class _SignInScreenState extends State<SignInScreen> {
                 Text(
                   'Sign in to access your IMEI registration',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -138,7 +177,9 @@ class _SignInScreenState extends State<SignInScreen> {
                     prefixIcon: const Icon(Icons.lock_outline),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -179,7 +220,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         // Handle forgot password
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Forgot password feature coming soon!'),
+                            content: Text(
+                              'Forgot password feature coming soon!',
+                            ),
                           ),
                         );
                       },
@@ -192,16 +235,19 @@ class _SignInScreenState extends State<SignInScreen> {
                 // Sign In Button
                 ElevatedButton(
                   onPressed: _isLoading ? null : _handleSignIn,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text('Sign In'),
+                  child:
+                      _isLoading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                          : const Text('Sign In'),
                 ),
                 const SizedBox(height: 24),
 
@@ -210,7 +256,9 @@ class _SignInScreenState extends State<SignInScreen> {
                   children: [
                     Expanded(
                       child: Divider(
-                        color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withOpacity(0.5),
                       ),
                     ),
                     Padding(
@@ -218,13 +266,17 @@ class _SignInScreenState extends State<SignInScreen> {
                       child: Text(
                         'OR',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.6),
                         ),
                       ),
                     ),
                     Expanded(
                       child: Divider(
-                        color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.outline.withOpacity(0.5),
                       ),
                     ),
                   ],

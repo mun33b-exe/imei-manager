@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "887147846420",
+    "project_id": "imei-4187d",
+    "storage_bucket": "imei-4187d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887147846420:android:28f588a3f21a46bd4f8001",
+        "android_client_info": {
+          "package_name": "com.example.imei"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBopTRjUPhIcP7xDEm8I_93Tg5IYFgtk1Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
