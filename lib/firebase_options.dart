@@ -41,46 +41,47 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCAZy4nTtXTV6NQ1oLqrrgHUQvKB567AgE',
-    appId: '1:887147846420:web:ca69ad3af3a480d44f8001',
-    messagingSenderId: '887147846420',
-    projectId: 'imei-4187d',
-    authDomain: 'imei-4187d.firebaseapp.com',
-    storageBucket: 'imei-4187d.firebasestorage.app',
+    apiKey: 'AIzaSyAPMCY5Tv5N3lN9uRJJ1pUChLYkyeQg728',
+    appId: '1:260600548807:web:8757f1b27a49b16b79dde2',
+    messagingSenderId: '260600548807',
+    projectId: 'imei-78551',
+    authDomain: 'imei-78551.firebaseapp.com',
+    storageBucket: 'imei-78551.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBopTRjUPhIcP7xDEm8I_93Tg5IYFgtk1Q',
-    appId: '1:887147846420:android:28f588a3f21a46bd4f8001',
-    messagingSenderId: '887147846420',
-    projectId: 'imei-4187d',
-    storageBucket: 'imei-4187d.firebasestorage.app',
+    apiKey: 'AIzaSyCB4aO8y_zKsyGRDVoDzD9MNWqRzYj444w',
+    appId: '1:260600548807:android:fac4e0c9f500668479dde2',
+    messagingSenderId: '260600548807',
+    projectId: 'imei-78551',
+    storageBucket: 'imei-78551.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD9MRO2ffHcgtX89Ah3ksAE-Rdg21o0-78',
-    appId: '1:887147846420:ios:30fd6f33029ee6074f8001',
-    messagingSenderId: '887147846420',
-    projectId: 'imei-4187d',
-    storageBucket: 'imei-4187d.firebasestorage.app',
+    apiKey: 'AIzaSyDX6mhg-h50hi4JdBM9qHNlmMENIaHir7w',
+    appId: '1:260600548807:ios:f0c3323d1eae93ff79dde2',
+    messagingSenderId: '260600548807',
+    projectId: 'imei-78551',
+    storageBucket: 'imei-78551.firebasestorage.app',
     iosBundleId: 'com.example.imei',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyD9MRO2ffHcgtX89Ah3ksAE-Rdg21o0-78',
-    appId: '1:887147846420:ios:30fd6f33029ee6074f8001',
-    messagingSenderId: '887147846420',
-    projectId: 'imei-4187d',
-    storageBucket: 'imei-4187d.firebasestorage.app',
+    apiKey: 'AIzaSyDX6mhg-h50hi4JdBM9qHNlmMENIaHir7w',
+    appId: '1:260600548807:ios:f0c3323d1eae93ff79dde2',
+    messagingSenderId: '260600548807',
+    projectId: 'imei-78551',
+    storageBucket: 'imei-78551.firebasestorage.app',
     iosBundleId: 'com.example.imei',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCAZy4nTtXTV6NQ1oLqrrgHUQvKB567AgE',
-    appId: '1:887147846420:web:d1e8fc37ad355aa64f8001',
-    messagingSenderId: '887147846420',
-    projectId: 'imei-4187d',
-    authDomain: 'imei-4187d.firebaseapp.com',
-    storageBucket: 'imei-4187d.firebasestorage.app',
+    apiKey: 'AIzaSyAPMCY5Tv5N3lN9uRJJ1pUChLYkyeQg728',
+    appId: '1:260600548807:web:4bba94a66a661ae779dde2',
+    messagingSenderId: '260600548807',
+    projectId: 'imei-78551',
+    authDomain: 'imei-78551.firebaseapp.com',
+    storageBucket: 'imei-78551.firebasestorage.app',
   );
+
 }

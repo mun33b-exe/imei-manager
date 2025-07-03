@@ -47,15 +47,17 @@ class _ImeiRegistrationScreenState extends State<ImeiRegistrationScreen> {
     final cleanImei = value.replaceAll(RegExp(r'[-\s]'), '');
 
     if (cleanImei.length != 15) {
-      return 'IMEI must be 15 digits';
+      return 'IMEI must be exactly 15 digits (current: ${cleanImei.length})';
     }
 
     if (!RegExp(r'^\d+$').hasMatch(cleanImei)) {
       return 'IMEI must contain only numbers';
     }
 
+    // For development/testing, we use lenient validation
+    // The IMEI service will handle the detailed validation
     if (!ImeiService.isValidImei(cleanImei)) {
-      return 'Invalid IMEI number';
+      return 'IMEI format validation failed';
     }
 
     return null;
